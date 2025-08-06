@@ -1,3 +1,4 @@
+__version__ = "1.1.0" # или "Alpha"
 # Генератор безопасных паролей
 # Описание проекта: программа генерирует заданное количество паролей и включает в себя умную настройку
 # на длину пароля, а также на то, какие символы требуется в него включить, а какие исключить.
@@ -19,8 +20,13 @@ binary = "01"
 digits = "0123456789"
 lowercase_letters = "abcdefghijklmnopqrstuvwxyz"
 uppercase_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-punctuation = "!#$%&*+-=?@^_"
+punctuation = "!@#$%^&*()_+-[]{};:,.<>?"
 chars = ""
+
+# Функция вывода версии программы
+def main():
+    '''Функция вывода версии программы'''
+    print(f"Добро пожаловать в Генератор паролей v{__version__}!")
 
 
 # Функция проверки, является ли ввод числом
@@ -65,6 +71,8 @@ def exclude_ambiguous_characters(chars):
     # Исключаем неоднозначные символы
     return [char for char in chars if char not in ambiguous_characters]
 
+
+main()  # Функция вывода версии программы
 
 # Получение количества паролей и их длины
 count = get_numeric_input(
