@@ -1,5 +1,9 @@
 # Генератор паролей на Python
 
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+**Текущая версия: 1.1.0 (Стабильная)**
+
 Этот проект представляет собой простой генератор паролей, написанный на Python.
 
 ## Описание
