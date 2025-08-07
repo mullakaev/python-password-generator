@@ -32,8 +32,8 @@ def handle_generate_password():
         include_symbols = data.get('include_symbols', True)
 
         # Валидация длины (можно вынести в password_generator.py, но для простоты здесь)
-        if not isinstance(length, int) or length < 8 or length > 128:
-            return jsonify({"error": "Длина пароля должна быть числом от 8 до 128."}), 400 # Bad Request
+        if not isinstance(length, int) or length < 8 or length > 256:
+            return jsonify({"error": "Длина пароля должна быть числом от 8 до 256."}), 400 # Bad Request
 
         # Вызываем функцию генерации из нашего модуля
         password, error = password_generator.generate_password(
