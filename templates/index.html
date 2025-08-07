@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор паролей</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+            flex-direction: column;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #password {
+            width: calc(100% - 20px); /* Учитываем padding */
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1.1em;
+            box-sizing: border-box; /* Важно для правильного расчета ширины */
+            text-align: center; /* Центрируем текст пароля */
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .options {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap; /* Чтобы элементы переносились на новую строку */
+            justify-content: center;
+            align-items: center;
+            gap: 10px; /* Пространство между элементами */
+        }
+        .options label {
+            font-size: 0.9em;
+            color: #555;
+            margin-right: 5px; /* Небольшой отступ справа от метки */
+        }
+        .options input[type="number"] {
+            width: 50px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .options input[type="checkbox"] {
+            margin-left: 0; /* Убираем марджин слева от чекбоксов */
+        }
+        .option-group { /* Для группировки чекбоксов */
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            font-size: 0.9em;
+            min-height: 1.2em; /* Чтобы блок не прыгал при появлении ошибки */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Генератор паролей</h1>
+
+        <input type="text" id="password" readonly placeholder="Ваш новый пароль появится здесь">
+        <div id="errorMessage" class="error-message"></div>
+
+        <div class="options">
+            <div class="option-group">
+                <label for="length">Длина:</label>
+                <input type="number" id="length" value="12" min="8" max="256">
+            </div>
+
+            <div class="option-group">
+                <label for="includeUppercase">Заглавные:</label>
+                <input type="checkbox" id="includeUppercase" checked>
+            </div>
+
+            <div class="option-group">
+                <label for="includeNumbers">Цифры:</label>
+                <input type="checkbox" id="includeNumbers" checked>
+            </div>
+
+            <div class="option-group">
+                <label for="includeSymbols">Символы:</label>
+                <input type="checkbox" id="includeSymbols" checked>
+            </div>
+        </div>
+
+        <button id="generateBtn">Сгенерировать пароль</button>
+        <button id="copyBtn">Копировать пароль</button>
+
+        <p style="margin-top: 20px; font-size: 0.8em; color: #777;">Версия приложения: 1.1.0</p>
+    </div>
+
+    <script>
+        const passwordDisplay = document.getElementById('password');
+        const errorMessageDiv = document.getElementById('errorMessage');
+        const generateBtn = document.getElementById('generateBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const lengthInput = document.getElementById('length');
+        const includeUppercaseCheckbox = document.getElementById('includeUppercase');
+        const includeNumbersCheckbox = document.getElementById('includeNumbers');
+        const includeSymbolsCheckbox = document.getElementById('includeSymbols');
+
+        // Функция генерации пароля (теперь обращается к серверу)
+        function generatePassword() {
+            errorMessageDiv.textContent = ''; // Очищаем предыдущие ошибки
+            const length = parseInt(lengthInput.value);
+            const includeUppercase = includeUppercaseCheckbox.checked;
+            const includeNumbers = includeNumbersCheckbox.checked;
+            const includeSymbols = includeSymbolsCheckbox.checked;
+
+            // Отправляем запрос на сервер Flask
+            fetch('/generate_password', { // Маршрут, который создадим во Flask
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    length: length,
+                    include_uppercase: includeUppercase,
+                    include_numbers: includeNumbers,
+                    include_symbols: includeSymbols
+                }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // Если ответ сервера не OK (например, 500 Internal Server Error)
+                    return response.json().then(errData => {
+                        throw new Error(errData.error || 'Ошибка сервера');
+                    });
+                }
+                return response.json(); // Парсим JSON из ответа сервера
+            })
+            .then(data => {
+                if (data.error) {
+                    // Если сервер вернул ошибку (например, длина меньше 8)
+                    errorMessageDiv.textContent = data.error;
+                    passwordDisplay.value = ''; // Очищаем поле пароля
+                } else {
+                    // Успешная генерация
+                    passwordDisplay.value = data.password;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при запросе к серверу:', error);
+                errorMessageDiv.textContent = `Ошибка: ${error.message}`;
+                passwordDisplay.value = ''; // Очищаем поле пароля
+            });
+        }
+
+        // Функция копирования пароля
+        function copyPassword() {
+            const passwordValue = passwordDisplay.value;
+            if (passwordValue) {
+                navigator.clipboard.writeText(passwordValue).then(() => {
+                    alert('Пароль скопирован!');
+                }).catch(err => {
+                    console.error('Не удалось скопировать пароль: ', err);
+                    alert('Не удалось скопировать пароль. Попробуйте вручную.');
+                });
+            } else {
+                alert('Сначала сгенерируйте пароль!');
+            }
+        }
+
+        // Добавляем обработчики событий
+        generateBtn.addEventListener('click', generatePassword);
+        copyBtn.addEventListener('click', copyPassword);
+
+        // Опционально: можно сгенерировать пароль при первой загрузке,
+        // но для этого нужно быть уверенным, что сервер уже готов.
+        // generatePassword();
+
+    </script>
+</body>
+</html>
